@@ -1,4 +1,4 @@
-Shader "04/Unlit/Shader_Celshade"
+Shader "04/Shader_Celshade"
 {
     Properties
     {
