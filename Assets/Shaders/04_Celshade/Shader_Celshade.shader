@@ -8,6 +8,7 @@ Shader "04/Shader_Celshade"
         _RimColor ("Rim Color", Color) = (1, 1, 1, 1)
         _RimIntensity ("Rim Intensity", Range(0, 1)) = 0
         _RimPower ("Rim Power", Range(0, 5)) = 1
+        _StepAmount ("Step amount", Range(0, 1)) = 0.5
     }
     
     SubShader
@@ -91,6 +92,7 @@ Shader "04/Shader_Celshade"
             half4 _RimColor;
             float _RimIntensity;
             float _RimPower;
+            fixed _StepAmount;
 
             half4 rimLight(half4 color, float3 normal, float3 viewDir)
             {
@@ -130,8 +132,14 @@ Shader "04/Shader_Celshade"
                 i.viewDirection = normalize(i.viewDirection);
 
                 col = rimLight(col, i.worldNormal, i.viewDirection);
+                col = floor(col / _StepAmount) * _StepAmount;
 
                 return col;
+
+                /*
+                fixed lighting = // your lighting calculation here
+                lighting = floor(lighting / 0.2) * 0.2;
+                */
             }
 
             ENDCG
