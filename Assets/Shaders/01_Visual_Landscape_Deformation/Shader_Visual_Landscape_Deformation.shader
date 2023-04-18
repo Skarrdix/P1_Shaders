@@ -1,4 +1,4 @@
-Shader "Unlit/SHDR_Triplanar_Dir"
+Shader "01/Shader_Visual_Landscape_Deformation"
 {
     Properties
     {

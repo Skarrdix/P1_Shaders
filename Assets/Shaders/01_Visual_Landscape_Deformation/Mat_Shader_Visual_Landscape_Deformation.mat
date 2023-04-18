@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: MAT_Triplanar
-  m_Shader: {fileID: 4800000, guid: f30f87ed585bd4a1680178d5ac45cc37, type: 3}
+  m_Name: Mat_Shader_Visual_Landscape_Deformation
+  m_Shader: {fileID: 4800000, guid: 3c6c6bcf1bc581b45a36050a42e5eada, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -19,6 +19,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Heightmap:
+        m_Texture: {fileID: 2800000, guid: c1253184662688043afb2124ad7e808f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: ce04ed2eed7167e498f09026b339238c, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -28,7 +32,9 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _Blend: 0.5
     - _FallOff: 5
-    - _Sharpness: 8.7
+    - _HeightScale: 2
+    - _TexScale: 1
     m_Colors: []
   m_BuildTextureStacks: []

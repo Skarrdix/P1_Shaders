@@ -83,7 +83,7 @@ Shader "02/Shader_Galaxy_FX"
                 // Hey listen!
                     // This fresnel effect is pretty bad and poopy and stinky.
                     // We don't know what the shader should look like, so we are waiting to know (xD).
-                float fresnel = pow(max(0, dot(i.viewDir, i.worldNormal)), _FresnelExponent);
+                float fresnel = 1 - pow(max(0, dot(i.viewDir, i.worldNormal)), _FresnelExponent);
                 col.rgb = lerp(col.rgb, _SpecularColor.rgb, fresnel * _FresnelMultiplier);
 
                 return col;
