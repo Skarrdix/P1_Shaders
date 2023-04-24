@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_Shader_Celshade
+  m_Name: InstMat_Shader_Celshade 1
   m_Shader: {fileID: 4800000, guid: 53a85d98d22d51249a06e4420b7fdf63, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -26,7 +26,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _OutWidth: 0.12
+    - _OutWidth: 0.0005
     - _RimIntensity: 0.5
     - _RimPower: 1.59
     - _StepAmount: 0.2

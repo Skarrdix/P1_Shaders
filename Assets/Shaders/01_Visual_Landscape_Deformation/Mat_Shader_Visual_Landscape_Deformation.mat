@@ -2,14 +2,15 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!21 &2100000
 Material:
-  serializedVersion: 6
+  serializedVersion: 8
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Mat_Shader_Visual_Landscape_Deformation
   m_Shader: {fileID: 4800000, guid: 3c6c6bcf1bc581b45a36050a42e5eada, type: 3}
-  m_ShaderKeywords: 
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -19,6 +20,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _HeightTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Heightmap:
         m_Texture: {fileID: 2800000, guid: c1253184662688043afb2124ad7e808f, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -31,9 +36,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: 2d1e5ad474c856c4cbecbb6d031bd433, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
     - _Blend: 0.5
+    - _DDist: 0.461
     - _FallOff: 5
+    - _Height: 0
     - _HeightScale: 2
     - _TexScale: 1
     m_Colors: []
