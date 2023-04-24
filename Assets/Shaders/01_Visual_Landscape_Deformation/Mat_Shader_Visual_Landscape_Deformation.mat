@@ -21,7 +21,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _HeightTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Heightmap:
@@ -39,9 +39,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _Blend: 0.5
-    - _DDist: 0.461
-    - _FallOff: 5
-    - _Height: 0
+    - _DDist: 0.048
+    - _FallOff: 10
+    - _Height: 13.4
     - _HeightScale: 2
     - _TexScale: 1
     m_Colors: []
