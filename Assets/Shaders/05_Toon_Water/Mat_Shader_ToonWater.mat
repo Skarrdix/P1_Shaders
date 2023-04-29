@@ -30,9 +30,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Shininess: 0.251
-    - _WaveFrequency: 6.98
-    - _WaveHeight: 2.51
+    - _GrayscaleAlpha: 255
+    - _Shininess: 0.75
+    - _WaveFrequency: 7
+    - _WaveHeight: 2.5
     m_Colors:
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _WaveSpeed: {r: 1, g: 0, b: 0, a: 0}

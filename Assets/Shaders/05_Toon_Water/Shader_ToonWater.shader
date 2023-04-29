@@ -8,7 +8,7 @@ Shader "05/Shader_ToonWater"
         _WaveHeight ("Wave height", Range(0, 10)) = 1.0
         _WaveFrequency ("Wave frequency", Range(0, 10)) = 1
         _SpecularColor("Specular Color", Color) = (1,1,1,1)
-        _Shininess("Shininess", Range(0, 1)) = 0
+        _Shininess ("Shininess", Range(0, 1)) = 0
     }
 
     SubShader
@@ -56,7 +56,6 @@ Shader "05/Shader_ToonWater"
             float3 _SpecularColor;
             float _Shininess;
 
-
             // Vertex shader function
             v2f vert(appdata v)
             {
@@ -85,7 +84,6 @@ Shader "05/Shader_ToonWater"
                 // Sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
                 fixed4 _grayScaleCol = tex2D(_GrayScaleTex, float2(i.offset, 1));
-
 
                 //Specular
                 float3 lightDir = normalize(_WorldSpaceLightPos0 - i.worldPos);
