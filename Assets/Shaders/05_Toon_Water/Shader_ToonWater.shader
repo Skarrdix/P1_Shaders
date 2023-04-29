@@ -5,8 +5,10 @@ Shader "05/Shader_ToonWater"
         _MainTex ("Texture", 2D) = "white" {}
         _GrayScaleTex ("Grayscale texture", 2D) = "white" {}
         _WaveSpeed ("Wave speed", float) = (1, 0, 0, 0)
-        _WaveHeight ("Wave height", Range(0, 1)) = 0.5
+        _WaveHeight ("Wave height", Range(0, 10)) = 1.0
         _WaveFrequency ("Wave frequency", Range(0, 10)) = 1
+        _SpecularColor("Specular Color", Color) = (1,1,1,1)
+        _Shininess("Shininess", Range(0, 1)) = 0
     }
 
     SubShader
@@ -30,6 +32,7 @@ Shader "05/Shader_ToonWater"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                half3 normal : NORMAL;
             };
 
             struct v2f
@@ -37,6 +40,9 @@ Shader "05/Shader_ToonWater"
                 float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float4 worldPos : TEXCOORD1;
+                float offset : TEXCOORD2;
+                float3 viewDir : TEXCOORD3;
+                float3 worldNormal : TEXCOORD4;
             };
 
             // Declare variables
@@ -47,16 +53,17 @@ Shader "05/Shader_ToonWater"
             float _WaveFrequency;
             sampler2D _MainTex;
             sampler2D _GrayScaleTex;
+            float3 _SpecularColor;
+            float _Shininess;
 
-            float offset;
 
             // Vertex shader function
             v2f vert(appdata v)
             {
                 v2f o;
-                offset = _WaveHeight * sin(_WaveFrequency * v.vertex.x + _WaveSpeed.x * _Time.y);
+                o.offset = (1 + sin(_WaveFrequency * v.vertex.x + _WaveSpeed.x * _Time.y)) / 2; //Make it always positive and between 0 and 1
 
-                v.vertex.y += offset;
+                v.vertex.y += _WaveHeight * o.offset;
                 o.pos = UnityObjectToClipPos(v.vertex);
 
                 // Calculate the displacement of the vertex
@@ -66,6 +73,9 @@ Shader "05/Shader_ToonWater"
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.worldPos = worldPos;
 
+                o.worldNormal = mul(unity_ObjectToWorld, float4(v.normal, 0)).xyz;
+                o.viewDir = normalize(_WorldSpaceCameraPos - o.worldPos);
+
                 return o;
             }
 
@@ -74,9 +84,17 @@ Shader "05/Shader_ToonWater"
             {
                 // Sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-                fixed4 _grayScaleCol = tex2D(_GrayScaleTex, float2(offset, 1));
+                fixed4 _grayScaleCol = tex2D(_GrayScaleTex, float2(i.offset, 1));
 
-                return col * _grayScaleCol;
+
+                //Specular
+                float3 lightDir = normalize(_WorldSpaceLightPos0 - i.worldPos);
+                float3 halfwayDir = normalize(i.viewDir + lightDir);
+                float specular = pow(max(0, dot(i.worldNormal, halfwayDir)), _Shininess);
+                _SpecularColor;
+
+                col.rgb = lerp(col.rgb, _SpecularColor.rgb, specular);
+                return col *_grayScaleCol;
             }
 
             ENDCG
