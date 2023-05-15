@@ -5,9 +5,9 @@ Shader "Unlit/SHDR_PBR"
         _MainTex ("Texture", 2D) = "white" {}
         _NormalTex("Normal Tex", 2D) = "bump" {}
         _NormalValue("Normal Multiplier", Range(0,10)) = 1
-        _SmoothnessTex("Smoothness Tex", 2D) = "white" {}
+        _SmoothnessTex("Smoothness Tex", 2D) = "black" {}
         _SmoothnessValue("Smoothness Multiplier", Range(0,1)) = 1
-        _MetallicTex("Metallic Tex", 2D) = "white" {}
+        _MetallicTex("Metallic Tex", 2D) = "black" {}
         _MetallicValue("metallic Value", Range(0,1)) = 1
         _Anisotropy("Anisotropy", Range(0,1)) = 0
         _AmbientCol("Ambient Color", Color) = (0.5,0.5,0.5,1)
@@ -148,12 +148,12 @@ Shader "Unlit/SHDR_PBR"
                 float NdotL = max(0.0, dot(normalWS, lightDir));
                 float NdotH = max(0.0, dot(halfDir, normalWS));
                 float NdotV = max(0.0, dot(normalWS, viewDir));
-                float HdotT = max(0.0, dot(halfDir, i.tangentWS));
-                float HdotB = max(0.0, dot(halfDir, i.bitangentWS));
+                float HdotT = dot(halfDir, i.tangentWS.xyz);
+                float HdotB = dot(halfDir, i.bitangentWS);
 
                 //Sampler PBR Tex
-                float smoothness = tex2D(_SmoothnessTex, i.uv).r * _SmoothnessValue;
-                float metallic = tex2D(_MetallicTex, i.uv).r * _MetallicValue;
+                float smoothness = saturate(min(1- _SmoothnessValue, 1 - tex2D(_SmoothnessTex, i.uv)).r);
+                float metallic = saturate(max(_MetallicValue, tex2D(_MetallicTex, i.uv)).r);
 
                 //Distributions
                 float3 F0 = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
@@ -164,7 +164,7 @@ Shader "Unlit/SHDR_PBR"
 
 
                 fixed4 col = float4(0, 0, 0, 1);
-                fixed3 lightValue = max(0.0, dot(normalWS, _WorldSpaceLightPos0))/* * unity_LightColor0.xyz*/;
+                fixed3 lightValue = max(0.0, dot(normalWS, lightDir)) * _LightColor0.rgb;
                 
                 lightValue += _AmbientCol;
 
