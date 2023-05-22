@@ -4,62 +4,190 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
+using UnityEngine.Serialization;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 
 [ExecuteInEditMode]
 
 public class MyCommandBuffer : MonoBehaviour
 {
-    public CameraEvent camEvent = CameraEvent.AfterForwardOpaque;
 
-    private int bufferPrePass = Shader.PropertyToID("_PrePass");
-    private int bufferAfterPass = Shader.PropertyToID("_AfterPass");
+    [ColorUsageAttribute(true, true)] public Color rimLightColor = Color.white;
+    public float blurSize = 0.05f;
 
+    public Shader Shader;
+
+
+
+    //list of all renderer components you want to have outlines as single silhouete
+    public Renderer[] renderers;
+    const string shaderName = "PP/MyPostProcess";
+
+
+    //shader Pass Indices
+    private const int SHADER_PASS_MASK = 0;
+    private const int SHADER_PASS_BLUR = 1;
+
+
+    //render texture IDs
+    private int maskBuffer = Shader.PropertyToID("_Mask");
+    private int glowBuffer = Shader.PropertyToID("_Glow");
+
+    //private variables
     private CommandBuffer cb;
     private Camera cam;
     public Material mat;
+    public CameraEvent cameraEvent = CameraEvent.BeforeForwardOpaque;
 
-    void Awake()
+
+    private Mesh MeshFromRenderer(Renderer r)
     {
-        CreateCommandBuffer();
+        if (r is MeshRenderer)
+            return r.GetComponent<MeshFilter>().sharedMesh;
+
+        return null;
     }
 
-    void CreateCommandBuffer()
+    private void CreateCommandBuffer(Camera cam)
     {
-        if (cb == null)
+        if ((renderers == null) || (renderers.Length == 0))
+            return;
+
+        if(cb == null)
         {
             cb = new UnityEngine.Rendering.CommandBuffer();
-            cb.name = "MyCommandBuffer";
+            cb.name = "MyCommandBuffer: " + gameObject.name;
         }
         else
         {
             cb.Clear();
         }
 
-        if (cam == null)
-            cam = Camera.main;
 
-        if (mat == null)
-            mat = new Material(Shader.Find("Unlit/PostProcess"));
-
-        cam.AddCommandBuffer(camEvent, cb);
-
-
-        RenderTextureDescriptor RTD = new RenderTextureDescriptor()
+        if(mat == null)
         {
-            height = 1080,
-            width = 1920,
+            mat = new Material(Shader != null ? Shader : Shader.Find(shaderName));
+        }
 
-            msaaSamples = 0,
-            graphicsFormat = UnityEngine.Experimental.Rendering.GraphicsFormat.R16G16B16_SFloat,
+        //do nothing if no rimlight will be visible
+        if(rimLightColor.a <= (1f/255f) || blurSize <= 0f)
+        {
+            cb.Clear();
+            return;
+        }
 
+        //support meshes with sub meshes
+        //can be from having multiple materials, complex skinning rigs, or a lot of vertices
+        int renderersCount = renderers.Length;
+        int[] subMeshCount = new int [renderersCount];
+
+        for(int i = 0; i < renderersCount; i++)
+        {
+            var mesh = MeshFromRenderer(renderers[i]);
+
+            if(mesh != null)
+            {
+                //assume saticly batched meshes only have one sub mesh
+                if (renderers[i].isPartOfStaticBatch)
+                    subMeshCount[i] = 1; //hack hack hack 
+                else
+                    subMeshCount[i] = mesh.subMeshCount;
+            }
+        }
+
+        //match current quality settings' MSAA settings
+        //doesn't check if current camera has MSAA enabled
+        //also could just always do MSAA if you so pleased
+
+        int msaa = 1; 
+        int width = cam.scaledPixelWidth;
+        int height = cam.scaledPixelHeight;
+
+
+        //setup descriptor for descriptor of inverted alpha render texture
+        RenderTextureDescriptor MaskRTD = new RenderTextureDescriptor()
+        {
             dimension = TextureDimension.Tex2D,
+            graphicsFormat = GraphicsFormat.A10R10G10B10_XRUNormPack32,
 
-            useMipMap = false
+            width = width,
+            height = height,
+
+            msaaSamples = msaa,
+            depthBufferBits = 0,
+
+            sRGB = false,
+
+            useMipMap = true,
+            autoGenerateMips = true
         };
 
-        //cb.GetTemporaryRT(bufferPrePass, RTD,  FilterMode.Bilinear);
+        cb.GetTemporaryRT(maskBuffer, MaskRTD, FilterMode.Trilinear);
 
-        cb.Blit(bufferPrePass, BuiltinRenderTextureType.CameraTarget, mat, 0);
+        //render meshes to main buffer for the interior stencil mask
+        cb.SetRenderTarget(maskBuffer);
+        cb.ClearRenderTarget(true, true, Color.clear);
+        for(int i = 0; i < renderersCount; i++)
+        {
+            for(int m = 0; m < subMeshCount[i]; m++)
+            {
+                cb.DrawRenderer(renderers[i], mat, m, SHADER_PASS_MASK);
+            }
+        }
+
+        cb.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+
+        //setup descriptor for descriptor for inverted alpha render texture
+
     }
+    void RemoveCommandBuffer(Camera cam)
+    {
+        if(this.cam != null && cb != null)
+        {
+            this.cam.RemoveCommandBuffer(cameraEvent, cb);
+            this.cam = null;
+        }
+    }
+
+    void ApplyCommandBuffer(Camera cam)
+    {
+        CreateCommandBuffer(cam);
+        if (cb == null)
+            return;
+
+        this.cam = cam;
+
+        this.cam.AddCommandBuffer(cameraEvent, cb);
+    }
+
+    //setup descriptor for descriptor of inverted alpha render texture
+    //RenderTextureDescriptor MaskRTD = new RenderTextureDescriptor()
+    //{
+        
+    //}
+
+
+    void OnEnable()
+    {
+        Camera.onPreRender += ApplyCommandBuffer;
+        Camera.onPostRender += RemoveCommandBuffer;
+    }
+
+    void OnDisable()
+    {
+        Camera.onPreRender -= ApplyCommandBuffer;
+        Camera.onPostRender -= RemoveCommandBuffer;
+    }
+
+
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        
+    }
+#endif
 }
