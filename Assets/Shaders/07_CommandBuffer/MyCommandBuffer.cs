@@ -17,6 +17,7 @@ public class MyCommandBuffer : MonoBehaviour
 
     [ColorUsageAttribute(true, true)] public Color rimLightColor = Color.white;
     public float blurSize = 0.05f;
+    public float _MipLVL = 4.0f;
 
     public Shader Shader;
 
@@ -24,17 +25,19 @@ public class MyCommandBuffer : MonoBehaviour
 
     //list of all renderer components you want to have outlines as single silhouete
     public Renderer[] renderers;
-    const string shaderName = "PP/MyPostProcess";
+    const string shaderName = "Unlit/PostProcess";
 
 
     //shader Pass Indices
     private const int SHADER_PASS_MASK = 0;
     private const int SHADER_PASS_BLUR = 1;
+    private const int SHADER_PASS_ADDITIVE = 2;
 
 
     //render texture IDs
     private int maskBuffer = Shader.PropertyToID("_Mask");
     private int glowBuffer = Shader.PropertyToID("_Glow");
+    private int mainBuffer = Shader.PropertyToID("_Main");
 
     //private variables
     private CommandBuffer cb;
@@ -107,7 +110,7 @@ public class MyCommandBuffer : MonoBehaviour
         int height = cam.scaledPixelHeight;
 
 
-        //setup descriptor for descriptor of inverted alpha render texture
+        // setup descriptor for descriptor of inverted alpha render texture
         RenderTextureDescriptor MaskRTD = new RenderTextureDescriptor()
         {
             dimension = TextureDimension.Tex2D,
@@ -127,22 +130,54 @@ public class MyCommandBuffer : MonoBehaviour
 
         cb.GetTemporaryRT(maskBuffer, MaskRTD, FilterMode.Trilinear);
 
-        //render meshes to main buffer for the interior stencil mask
+        // render meshes to main buffer for the interior stencil mask
         cb.SetRenderTarget(maskBuffer);
         cb.ClearRenderTarget(true, true, Color.clear);
-        for(int i = 0; i < renderersCount; i++)
+        for (int i = 0; i < renderersCount; i++)
         {
-            for(int m = 0; m < subMeshCount[i]; m++)
+            for (int m = 0; m < subMeshCount[i]; m++)
             {
                 cb.DrawRenderer(renderers[i], mat, m, SHADER_PASS_MASK);
+
             }
         }
 
-        cb.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+        //cb.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
 
-        //setup descriptor for descriptor for inverted alpha render texture
+        // setup descriptor for descriptor of inverted alpha render texture
+        RenderTextureDescriptor GlowRTD = new RenderTextureDescriptor()
+        {
+            dimension = TextureDimension.Tex2D,
+            graphicsFormat = GraphicsFormat.A10R10G10B10_XRUNormPack32,
 
+            width = width,
+            height = height,
+
+            msaaSamples = msaa,
+            depthBufferBits = 0,
+
+            sRGB = false,
+
+            useMipMap = true,
+            autoGenerateMips = true
+        };
+
+        mat.SetFloat("_Distance", blurSize);
+        mat.SetFloat("_MipLVL", _MipLVL);
+
+        // create silhouette buffer and assign it as the current render target
+        cb.GetTemporaryRT(glowBuffer, GlowRTD, FilterMode.Trilinear);
+        cb.Blit(maskBuffer, glowBuffer, mat, SHADER_PASS_BLUR);
+
+       // mat.SetTexture("_Main",BuiltinRenderTextureType.CameraTarget);
+        cb.Blit(glowBuffer, BuiltinRenderTextureType.CameraTarget, mat, SHADER_PASS_ADDITIVE);
+
+        cb.ReleaseTemporaryRT(maskBuffer);
+        cb.ReleaseTemporaryRT(glowBuffer);
+        cb.ReleaseTemporaryRT(mainBuffer);
     }
+
+
     void RemoveCommandBuffer(Camera cam)
     {
         if(this.cam != null && cb != null)
@@ -163,11 +198,6 @@ public class MyCommandBuffer : MonoBehaviour
         this.cam.AddCommandBuffer(cameraEvent, cb);
     }
 
-    //setup descriptor for descriptor of inverted alpha render texture
-    //RenderTextureDescriptor MaskRTD = new RenderTextureDescriptor()
-    //{
-        
-    //}
 
 
     void OnEnable()

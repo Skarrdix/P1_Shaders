@@ -477,7 +477,9 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _Distance: 64.04
+    - _MipLVL: 4
     m_Colors: []
   m_BuildTextureStacks: []
 --- !u!1 &728284171
@@ -676,7 +678,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rimLightColor: {r: 1, g: 1, b: 1, a: 1}
-  blurSize: 0.05
+  blurSize: 64.04
+  _MipLVL: 4
   Shader: {fileID: 4800000, guid: cfcfec9f0afc5d24b802540d9e2b210a, type: 3}
   renderers:
   - {fileID: 2137759259}
