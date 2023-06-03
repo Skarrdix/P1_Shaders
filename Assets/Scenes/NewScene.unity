@@ -478,8 +478,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Distance: 64.04
-    - _MipLVL: 4
+    - _Distance: 52.5
+    - _MipLVL: 1
     m_Colors: []
   m_BuildTextureStacks: []
 --- !u!1 &728284171
@@ -678,13 +678,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rimLightColor: {r: 1, g: 1, b: 1, a: 1}
-  blurSize: 64.04
-  _MipLVL: 4
+  blurSize: 52.5
+  _MipLVL: 1
   Shader: {fileID: 4800000, guid: cfcfec9f0afc5d24b802540d9e2b210a, type: 3}
   renderers:
   - {fileID: 2137759259}
+  - {fileID: 1754995990}
+  - {fileID: 583933837}
+  - {fileID: 32954015}
   mat: {fileID: 628491889}
-  cameraEvent: 10
+  cameraEvent: 17
 --- !u!1 &1396123616
 GameObject:
   m_ObjectHideFlags: 0

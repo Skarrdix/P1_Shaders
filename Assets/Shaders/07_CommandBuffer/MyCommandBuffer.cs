@@ -169,6 +169,9 @@ public class MyCommandBuffer : MonoBehaviour
         cb.GetTemporaryRT(glowBuffer, GlowRTD, FilterMode.Trilinear);
         cb.Blit(maskBuffer, glowBuffer, mat, SHADER_PASS_BLUR);
 
+        // seteamos el render target actual al de la camara de nuevo
+        cb.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
+
        // mat.SetTexture("_Main",BuiltinRenderTextureType.CameraTarget);
         cb.Blit(glowBuffer, BuiltinRenderTextureType.CameraTarget, mat, SHADER_PASS_ADDITIVE);
 
