@@ -26,12 +26,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FresnelExponent: 0.44
+    - _FresnelExponent: 9.82
     - _FresnelMultiplier: 1
-    - _PanSpeed: 0.25
-    - _Shininess: 43.1
-    - _Size: 1
+    - _PanSpeed: -1.25
+    - _Shininess: 100
+    - _Size: 3.53
+    - _SpecularStrength: 2.2
     m_Colors:
-    - _Color: {r: 0.6489506, g: 0, b: 1, a: 1}
-    - _SpecularColor: {r: 0.764151, g: 0.43614277, b: 0.43614277, a: 1}
+    - _Color: {r: 0.6497738, g: 0.9528302, b: 0.6427109, a: 1}
+    - _SpecularColor: {r: 0, g: 1, b: 0.0032496452, a: 1}
   m_BuildTextureStacks: []
