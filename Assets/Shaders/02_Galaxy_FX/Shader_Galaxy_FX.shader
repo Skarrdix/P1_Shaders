@@ -7,6 +7,7 @@ Shader "02/Shader_Galaxy_FX"
         _Size ("Size", Range(0, 5)) = 1
         _PanSpeed ("Pan Speed", Range(-2, 2)) = 0
         _Shininess ("Shininess", Range(-1, 100)) = 0
+        _SpecularStrength ("Specular Strength", Range(0, 100)) = 5
         _SpecularColor ("Specular Color", Color) = (1,1,1,1)
         _FresnelExponent ("Fresnel Exponent", Range(0, 10)) = 2
         _FresnelMultiplier ("Fresnel Multiplier", Range(0, 1)) = 1
@@ -24,6 +25,7 @@ Shader "02/Shader_Galaxy_FX"
             #pragma fragment frag
 
             #include "UnityCG.cginc"
+            #include "UnityLightingCommon.cginc"
 
             struct appdata
             {
@@ -47,9 +49,20 @@ Shader "02/Shader_Galaxy_FX"
             float _Size;
             float _PanSpeed;
             float _Shininess;
+            float _SpecularStrength;
             float3 _SpecularColor;
             float _FresnelExponent;
             float _FresnelMultiplier;
+
+            half4 specular(half4 light_Color, float specularStrength, half3 normal, half3 viewDir, half3 lightDir, float shininess)
+            {
+                // Previously o.wPos  = mul(unity_ObjetcToWorlPos, v.vertex)
+                // viewDir = normalize(_WorldSpaceCameraPos - o.wPos)
+                float3 halfwayDir = normalize(viewDir + lightDir);
+                float spec = pow(saturate(dot(normal, halfwayDir)), shininess);
+                return light_Color * spec * specularStrength;
+            }
+
 
             v2f vert (appdata v)
             {
@@ -69,24 +82,17 @@ Shader "02/Shader_Galaxy_FX"
                 uv += _Time.y * _PanSpeed; // add panning to the UV coordinates
                 float4 galaxy = tex2D(_MainTex, uv);
 
-                float3 lightDir = normalize(_WorldSpaceLightPos0 - i.worldPos);
-                float3 halfwayDir = normalize(i.viewDir + lightDir);
-
-                float diffuse = max(0, dot(i.worldNormal, lightDir));
-                float specular = pow(max(0, dot(i.worldNormal, halfwayDir)), _Shininess);
+                half4 specularVal = specular(_LightColor0, _SpecularStrength, i.worldNormal, i.viewDir, _WorldSpaceLightPos0, _Shininess);
 
                 col.rgb *= _Color.rgb * galaxy.rgb;
-                col.rgb += _SpecularColor.rgb * specular;
                 col.a *= galaxy.a;
 
-                // add fresnel effect
-                // Hey listen!
-                    // This fresnel effect is pretty bad and poopy and stinky.
-                    // We don't know what the shader should look like, so we are waiting to know (xD).
-                float fresnel = 1 - pow(max(0, dot(i.viewDir, i.worldNormal)), _FresnelExponent);
-                col.rgb = lerp(col.rgb, _SpecularColor.rgb, fresnel * _FresnelMultiplier);
 
-                return col;
+                fixed fresnel = 1 - saturate(dot(i.viewDir, i.worldNormal));
+                fixed4 fresnelColor = (1, 1, 1, 1);
+                col.rgb = lerp(col.rgb, fresnelColor,fresnel * _FresnelMultiplier);
+
+                return col + specularVal;
             }
 
             ENDCG
